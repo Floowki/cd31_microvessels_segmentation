@@ -10,6 +10,9 @@ C.C. Reyes-Aldasoro, L Williams, S Akerman, C Kanthou and G. M. Tozer, "An autom
 
 # 🏁 Introduction 
 
+The CD31 marker is primarily used to demonstrate the presence of endothelial cells, to measure vessels density or quantify angiogenesis. CD31 is expressed in the vast majority of all types of vascular neoplasms. On immunostained histological sections, it appears in brown, stained with Diaminobenzidine, with a good contrast against the blue background and cell nuclei, counterstained with Heamtoxylin. 
+The algorithms is based on pre-processing steps that provide the seeds for a region-growing algorithm in the 3D Hue, Saturation, Value (HSV) colour model. The objects resulting from this process are further refined through morphological operations and splitted. This algorithm concerns patches extracted from tumour Whole-Slide Images. 
+
 # ✨ Subfunctions 
 
 # 🔰 Automatic segmentation 
