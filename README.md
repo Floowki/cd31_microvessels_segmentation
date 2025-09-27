@@ -8,10 +8,10 @@ C.C. Reyes-Aldasoro, L Williams, S Akerman, C Kanthou and G. M. Tozer, "An autom
 🔗 Article: https://onlinelibrary.wiley.com/doi/abs/10.1111/j.1365-2818.2010.03464.x \
 🔗 GitHub: https://github.com/reyesaldasoro/Microvessel-Segmentation.git
 
-# Introduction 
+# 🏁 Introduction 
 
-# Subfunctions 
+# ✨ Subfunctions 
 
-# Automatic segmentation 
+# 🔰 Automatic segmentation 
 
-# Dataset segmentation 
+# 🚩 Dataset segmentation 
