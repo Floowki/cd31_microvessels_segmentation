@@ -10,4 +10,8 @@ C.C. Reyes-Aldasoro, L Williams, S Akerman, C Kanthou and G. M. Tozer, "An autom
 
 # Introduction 
 
-# 
+# Subfunctions 
+
+# Automatic segmentation 
+
+# Dataset segmentation 
