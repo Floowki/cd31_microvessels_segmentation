@@ -28,7 +28,7 @@ def quanti_r(data, bitsq=1, zeroLevel=None):
     if mindata == maxdata:
         return data, data
 
-    # case of values between 0 and 1, enlarge because the 'round' does not work for small numbers
+    # case of values between 0 and 1, enlarge 
     if maxdata <= 1:
         lq_data = (np.round(data * (2**bitsq - 1))) / (2**bitsq - 1)
         nl_qdata = data

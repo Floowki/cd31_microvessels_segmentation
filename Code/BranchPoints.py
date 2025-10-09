@@ -13,7 +13,7 @@ def bwhitmiss(image, kernel):
     #| Outputs :
     #|          # foreground_erosion : eroded foreground (=ROI)
     #|          # background_dilation : dilated background 
-    #|   # = foreground_erosion & background_dilation (intersection)
+    #|          # = foreground_erosion & background_dilation (intersection)
     
     # Erosion of the foreground (white areas in the image)
     foreground_erosion = binary_erosion(image, structure=kernel)
@@ -22,6 +22,7 @@ def bwhitmiss(image, kernel):
     background_dilation = binary_dilation(~image, structure=kernel)
     
     return foreground_erosion & background_dilation
+
     
 # Find the branching points in a binary image with a skeletonized structure 
 def BranchPoints(dataIn):
@@ -35,9 +36,9 @@ def BranchPoints(dataIn):
     
     
     # Define structuring elements (kernels)
-    branch_kernel1 = np.array([[0, 1, 0], [1, 1, 0], [0, 0, 1]])  # Corner
+    branch_kernel1 = np.array([[0, 1, 0], [1, 1, 0], [0, 0, 1]])  # corner
     branch_kernel2 = np.array([[0, 1, 0], [0, 1, 0], [1, 0, 1]])  # Y-junction
-    branch_kernel3 = np.array([[1, 0, 0], [0, 1, 0], [1, 0, 1]])  # Diagonal
+    branch_kernel3 = np.array([[1, 0, 0], [0, 1, 0], [1, 0, 1]])  # diagonal
     
     # Pad input data
     dataIn = padData(dataIn, 1, [], 0)
@@ -58,7 +59,7 @@ def BranchPoints(dataIn):
     # Remove padding
     branch_points1 = branch_points1[1:-1, 1:-1]
 
-    # If additional outputs are required
+    # if additional outputs are required
     branch_points2 = branch_points1.copy()
     
     branch_points2[:-1, :] |= branch_points1[1:, :]

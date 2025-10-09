@@ -1,7 +1,6 @@
 
 import numpy as np
 
-# Pad the provided image 
 def padData(qtdata,numPadPixels, dimsToPad, padWith):
     #| Args : 
     #|   # qtdata : data to be padded
@@ -17,7 +16,6 @@ def padData(qtdata,numPadPixels, dimsToPad, padWith):
     if padWith == None:
         padWith = 1
     
-    # Determine dimensions if not provided
     if ( dimsToPad == None ) or ( len(dimsToPad) ) == 0:
         rows, cols, levs, num_feats = qtdata.shape
 
@@ -25,13 +23,13 @@ def padData(qtdata,numPadPixels, dimsToPad, padWith):
         dimsToPad = list(dimsToPad) + [1] * (4 - len(dimsToPad)) # concatenation 
         rows, cols, levs, num_feats = dimsToPad[:4]
     
-    # Pad rows if needed
+    # if needed: pad rows 
     if rows > 1:
         top_padding = padWith * np.tile(qtdata[0:1, :, :, :], (numPadPixels, 1, 1, 1))
         bottom_padding = padWith * np.tile(qtdata[-1:, :, :, :], (numPadPixels, 1, 1, 1))
         qtdata = np.concatenate([top_padding, qtdata, bottom_padding], axis=0)
     
-    # Pad columns if needed
+    # if needed : pad columns 
     if cols > 1:
         left_padding = padWith * np.tile(qtdata[:, 0:1, :, :], (1, numPadPixels, 1, 1))
         right_padding = padWith * np.tile(qtdata[:, -1:, :, :], (1, numPadPixels, 1, 1))
@@ -39,7 +37,7 @@ def padData(qtdata,numPadPixels, dimsToPad, padWith):
     
     data_padded = qtdata
     
-    # Pad levels if needed
+    # if needed : pad levels 
     if levs > 1:
         new_shape = list(qtdata.shape)
         new_shape[2] += 2 * numPadPixels

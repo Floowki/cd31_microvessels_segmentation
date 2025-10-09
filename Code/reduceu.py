@@ -30,14 +30,14 @@ def reduceu(data, numReductions, reducein3D):
             data = reduceu(data,numReductions-1,reducein3D)
     
 
-        # Perform the reduction depending on the data's dimensions
+        # perform the reduction depending on the data's dimensions
         if data.ndim == 2 or reducein3D == 0:
             redData = convolve(data, np.array([[1, 1], [1, 1]]))
-            redData = redData[1::2, 1::2] / 4  # Downsample by 2 and divide by 4
+            redData = redData[1::2, 1::2] / 4 
             
         else:
-            redData = convolve(data, np.ones((2, 2, 2)))  # 3D convolution
-            redData = redData[1::2, 1::2, 1::2] / 8  # Downsample by 2 and divide by 8
+            redData = convolve(data, np.ones((2, 2, 2)))  
+            redData = redData[1::2, 1::2, 1::2] / 8 
 
 
     return redData

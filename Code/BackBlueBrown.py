@@ -7,9 +7,9 @@ import skimage
 from scipy.ndimage import binary_fill_holes
 import colourHist2
 
-# Helper function to remove spur pixels.
+
 def bwmorph_spur(binary_img, iterations):
-    # Remove spur pixels (endpoints) iteratively.
+    # remove spur pixels (endpoints) iteratively.
     img = binary_img.copy().astype(np.uint8)
     kernel = np.array([[1, 1, 1],
                        [1, 0, 1],
@@ -20,9 +20,8 @@ def bwmorph_spur(binary_img, iterations):
         img[endpoints] = 0
     return img.astype(bool)
 
-# Helper function to perform majority filtering.
 def bwmorph_majority(binary_img):
-    # For each pixel, if at least 5 of the 9 pixels in the 3x3 neighborhood are 1, set pixel to 1.
+    # for each pixel, if at least 5 of the 9 pixels in the 3x3 neighborhood are 1, set pixel to 1.
     img = binary_img.copy().astype(np.uint8)
     kernel = np.ones((3, 3), dtype=np.uint8)
     conv = convolve2d(img, kernel, mode='same', boundary='symm')
@@ -40,8 +39,6 @@ def BackBlueBrown(dataRGB):
     #     #|   # totMask1 :  smoothed with Blue pixels assigned to Brown by connectivity 
     #     #|   # dataHue : the Hue component of the image in the HSV space 
     
-    # Parse Input
-    # No input data is received, error 
     if dataRGB is None:
         print(help(BackBlueBrown))
         totMask = np.array([])
@@ -53,26 +50,22 @@ def BackBlueBrown(dataRGB):
     # Pre-processing
     rows, cols, levs = dataRGB.shape  
     dataHSV = skimage.color.rgb2hsv(dataRGB)
-    #----- colourHist2 will return the chromaticity histogram and will set H,S,V in different matrices
+    # colourHist2 returns the chromaticity histogram, H,S,V in different matrices
     hs_im1, chrom3D, dataHue, dataSaturation, dataValue = colourHist2(dataHSV, 32, 32, 32)
     sizeSaturation, sizeHue, sizeValue = chrom3D.shape  
     
-
-    #  Maximum Saturation Profile P_max_S (not used at the moment ...), 99% Profile P_99_S and hue histogram
+    #  Maximum Saturation Profile P_max_S, 99% Profile P_99_S and hue histogram
     im_H_S = np.sum(chrom3D, axis=2)
     im_H_S_cum = np.cumsum(im_H_S, axis=0)
     cummulativeLevel_99 = np.ceil(np.tile(0.99 * im_H_S_cum[-1, :], (sizeSaturation, 1)))
 
-    
     # saturationSpread99: cumulative values less than 99% level.
     saturationSpread99 = im_H_S_cum < cummulativeLevel_99
-    
     
     # P_99_S: maximum saturation index for which the cumulative histogram is below the threshold.
     P_99_S = np.max(saturationSpread99 * np.tile(np.arange(1, sizeSaturation + 1).reshape(-1, 1), (1, sizeHue)), axis=0)
 
-    
-    # Find hues biases
+    # find hues biases
     hueTendsToBrown = np.sum(np.sum((np.isin(dataHue, np.arange(1, 7))) & (dataSaturation < 8))) / (rows * cols)
                                   
     # kernels for the region growing
@@ -84,8 +77,8 @@ def BackBlueBrown(dataRGB):
     kernelDil7 = np.ones((7, 7), dtype=np.uint8)
 
     # Define INITIAL Ranges of hues, will serve as seed to be expanded  it depends on the characteristics (blueish, redish) of the image
-    # Brown:        red to ocre
-    # Background:   yellow to cyan
+    # Brown      :   red to ocre
+    # Background :   yellow to cyan
     if hueTendsToBrown > 0.55:
         brownRange = np.arange(2, 5)       
         backRange = np.arange(5, 17)         
@@ -127,16 +120,14 @@ def BackBlueBrown(dataRGB):
         blueRange = np.arange(19, 25)        
         purpleRange = np.arange(26, 30)
             
-
-    #The huesTendTo* will help define how to set the threshold for saturation
     #define the Saturation Threshold as the average of P_max_S along the hues of the background
     satThresholdBack = np.ceil(np.mean(P_99_S[backRange - 1]))
-    satThresholdBrown = 0.6 * np.mean(P_99_S[brownRange - 1]) # 0.5 normally 
-    satThresholdBlue = 0.6 * np.mean(P_99_S[blueRange - 1]) # 0.5 normally 
-    satThresholdPurple = 0.6 * np.mean(P_99_S[purpleRange - 1]) # 0.5 normally 
+    satThresholdBrown = 0.6 * np.mean(P_99_S[brownRange - 1]) 
+    satThresholdBlue = 0.6 * np.mean(P_99_S[blueRange - 1]) 
+    satThresholdPurple = 0.6 * np.mean(P_99_S[purpleRange - 1]) 
     
     
-    #----------------------- Saturation  ------------------------------------------
+    # Saturation aspect
     highSatBrown = dataSaturation >= satThresholdBrown
     highSatBlue = dataSaturation >= satThresholdBlue
     highSatPurple = dataSaturation >= satThresholdPurple
@@ -160,18 +151,18 @@ def BackBlueBrown(dataRGB):
     medSatBlue = dataSaturation >= (max(2, satThresholdBlue / 2))
     medSatPurple = dataSaturation >= (max(2, satThresholdPurple / 2))
     
-    #----------------Define seeds of regions --------------------------------------
-    # Above the satThreshold will define initial seeds for brown and blue
+    # Define seeds of regions
+    # Above satThreshold : initial seeds for brown and blue
     initBrown = (darkValue) & (highSatBrown) & (np.isin(dataHue, brownRange))
     initBlue = (darkValue) & (highSatBlue) & (np.isin(dataHue, blueRange))
     initPurple = (darkValue) & (highSatPurple) & (np.isin(dataHue, purpleRange))
-    # Below the satThreshold and restricted to hues yellow and green will define background
+    # Below satThreshold : background restricted to hues yellow and green
     initBack = skimage.morphology.dilation((brightValue) & (lowSatBack) & (np.isin(dataHue, backRange)), footprint=kernelDil3)
     initBack0 = initBack.copy()
     boundaryRegionBack = skimage.morphology.dilation(initBack, footprint=kernelDil7)
     initBack = initBack | ((boundaryRegionBack & verylowSat) & (~(initBlue | initBrown)))
     initAreas = np.sum(np.stack([initBrown, initBack, initBlue], axis=-1), axis=(0, 1)) / (rows * cols)
-    # Brown is smaller.
+    # Brown is smaller 
     initBrown = initBrown | initPurple
     kernelBrown = kernelDil5
     kernelBlue = kernelDil1
@@ -184,29 +175,30 @@ def BackBlueBrown(dataRGB):
     changeFromPrevious = 11
     numGrowthCycles = 5 # 9 before 
     
-    # Region growing two regions blue and brown, restrict to unassigned pixels and saturation levels
+    # region growing two regions blue and brown, restrict to unassigned pixels and saturation levels
     while (counterGrow < numGrowthCycles) and (changeFromPrevious > 50):
         
+        # first extend the brown
         if initAreas[0] < 0.2:
-            #-----------first extend the brown  ---------------
+            
             boundaryRegionBrown = (convolve2d(initBrown.astype(np.float64), kernelBrown, mode='same') > 0)
             brightBrown = (darkValue) & (medSatBrown)
             darkBrownPurple = (darkValue) & (medSatPurple)
             combinedRegion = (brightBrown | darkBrownPurple) & (~(initBack | initBlue))
             initBrown = initBrown | (combinedRegion & boundaryRegionBrown)
             
-            
+        # second extend the blue, restrict it to areas not assigned before    
         if initAreas[2] < 0.2:
-            #-----------second extend the blue, restrict it to areas not assigned before ---------------
+            
             boundaryRegionBlue = skimage.morphology.dilation(initBlue, footprint=kernelBlue)
             brightBlue = medSatBlue & (np.isin(dataHue, np.arange(blueRange[0], blueRange[-1] + 1)))
             darkBluePurple = medSatPurple & (np.isin(dataHue, purpleRange))
             combinedRegion = (brightBlue | darkBluePurple) & (~(initBack | initBrown))
             initBlue = initBlue | (combinedRegion & boundaryRegionBlue)
-            
-            
+
+        # convert the convolution result to boolean by comparing with 0    
         if initAreas[1] < 0.2:
-            # Convert the convolution result to boolean by comparing with 0
+        
             boundaryRegionBack = (convolve2d(initBack.astype(np.float64), kernelDil1, mode='same') > 0)
             boundaryRegionLowSat = (convolve2d(brightValue.astype(np.float64), kernelDil1, mode='same') > 0) & (convolve2d(lowSatBack.astype(np.float64), kernelDil3, mode='same') > 0)
             combinedRegion = (boundaryRegionBack & boundaryRegionLowSat) & (~(initBlue | initBrown))
@@ -221,7 +213,7 @@ def BackBlueBrown(dataRGB):
 
     totMask0 = totMask.copy()
 
-    #  Dilate only the brown area, only restriction is the hue
+    #  dilate only the brown area, only restriction is the hue
     counterGrow = 1
     changeFromPrevious = 11
     numGrowthCycles = 2
@@ -235,12 +227,10 @@ def BackBlueBrown(dataRGB):
         totMask = newMask.copy()
         counterGrow = counterGrow + 1
         
-
-    # Assignment of isolated mediumly saturated regions
+    # assign isolated mediumly saturated regions
     initAreas = np.sum(np.stack([initBrown, initBack, initBlue], axis=-1), axis=(0, 1)) / (rows * cols)
     
-    
-    # Removal of noise (isolated pixels or pixels in pairs)
+    # remove noise 
     initBrownL = skimage.measure.label(initBrown, connectivity=1)  # change here 
     initBackL = skimage.measure.label(initBack, connectivity=1)
     initBlueL = skimage.measure.label(initBlue, connectivity=1)
@@ -259,16 +249,13 @@ def BackBlueBrown(dataRGB):
     initBack = np.isin(initBackL, list(Back_labels))
     initBlue = np.isin(initBlueL, list(Blue_labels))
     
-    
-
-    # Region growing all regions blue and brown, restrict to unassigned pixels only
-    # add those blue and dark pixels In contact with brown, to brown  
+    # region growing all regions blue and brown, restrict to unassigned pixels only
+    # add those blue and dark pixels in contact with brown, to brown  
     totMask = initBrown.astype(np.uint8) + 2 * initBack.astype(np.uint8) + 3 * initBlue.astype(np.uint8)
     totMask[totMask == 0] = 2
     totMask1 = totMask.copy()
     darkBlueNuclei = ((totMask == 3) & (dataValue < 17))
     
-
     # exclude now pixels that do not touch brown cells
     darkBlueNucleiL = label(darkBlueNuclei, connectivity=1)
     dilated_totMask0 = skimage.morphology.dilation((totMask0 == 1), footprint=kernelDil1)
@@ -276,20 +263,19 @@ def BackBlueBrown(dataRGB):
     darkNucleiNextBrown = np.isin(darkBlueNucleiL, darkBlueNucleiL[keepElem])
     totMask1[darkNucleiNextBrown] = 1
 
-    # Smoothing of the final mask
+    # smoothing of the final mask
     initBrown = (totMask1 == 1)
     initBack = (totMask1 == 2)
     initBlue = (totMask1 == 3)
 
-    # the combination of a closing operator and a majority smooth very nicely, BUT it also fills in the
-    # holes, which will be needed later on for shape analysis, therefore, keep all the holes larger than 15
-    # Pixels in area.
+    # the combination of a closing operator and a majority smooth very nicely
+    # also fills in the holes: keep all the holes larger than 15 pixels in area 
     HolesBrown = binary_fill_holes(initBrown)
     HolesBrownL = label(HolesBrown.astype(np.int32) - initBrown.astype(np.int32), connectivity=1)
     HolesBrownR = regionprops(HolesBrownL)
     HolesBrownK = np.isin(HolesBrownL, [prop.area for prop in HolesBrownR if prop.area > 10])
                              
-    # Smooth with an imclose, majority and removal of small objects
+    # smooth with an imclose, majority and removal of small objects
     initBrown = skimage.morphology.closing(bwmorph_spur(initBrown, 2), footprint=np.array([[0, 1, 1, 0],
                                                                                         [1, 1, 1, 1],
                                                                                         [0, 1, 1, 0]]))
@@ -312,10 +298,8 @@ def BackBlueBrown(dataRGB):
     totMask1 = initBrown.astype(np.uint8) + 2 * initBack.astype(np.uint8) + 3 * initBlue.astype(np.uint8)
     totMask1[totMask1 == 0] = 2
 
-    # Final cleaning procedure, remove objects that are only partly brown
-    # Label to identify objects uniquely
+    # final cleaning procedure, remove objects that are only partly brown
     totMaskLabeled, numBrownObjects = label(totMask1 == 1, connectivity=2, return_num=True)
-    # Obtain area of objects
     statsTotMaskLab = regionprops(totMaskLabeled)
 
     if numBrownObjects > 0:

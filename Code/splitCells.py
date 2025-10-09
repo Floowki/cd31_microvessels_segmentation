@@ -6,11 +6,11 @@ from scipy.ndimage import binary_fill_holes
 from scipy.ndimage import distance_transform_edt
 from skimage.segmentation import watershed
 
-# To split cells if they have more than one inner region
+
 def splitCells(dataIn,minAreaObject = 17):
     #| Args : 
     #|   # dataIn : image identifying the cells with more than one inner region
-    #|   # minAreaObject : minimum area of an object after splitting it (default value = 17 pixels)
+    #|   # minAreaObject : minimum area of an object after splitting it (default arbitrary value = 17 pixels)
     
     #| Outputs :
     #|   # splittedCellsLab : image identifying the splitted cells 
@@ -27,10 +27,10 @@ def splitCells(dataIn,minAreaObject = 17):
     min_data = np.min(dataIn)
 
     if (min_data == 0) and (max_data == 1) :
-        # Binary image case
+        
         data_labelled, num_objects = label(dataIn, structure=np.ones((3, 3)))
     else:
-        # More than 2 levels
+     
         num_objects = max_data
 
     for counter_objs in range(1, num_objects + 1):
