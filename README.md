@@ -16,7 +16,7 @@ The algorithms is based on pre-processing steps that provide the seeds for a reg
 # ✨ Subfunctions 
 
 ➜ bwmorph \
-    | \
+<br>| \
    ShadingCorrection ➜ simple_pad_2d \
     | \
    gaussF \
