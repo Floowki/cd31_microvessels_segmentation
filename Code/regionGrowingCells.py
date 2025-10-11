@@ -248,4 +248,4 @@ def regionGrowingCells(dataIn) :
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (40, 40))          
     BW2 = cv2.morphologyEx(BW2.astype(np.uint8), cv2.MORPH_CLOSE, kernel)   
 
-    return BW2, finalCells #, BW4 , finalCellsIm, statsObjects2, statsObjects3, BW3, BW6, im2
+    return im2, BW2, BW3, BW4, BW6, finalCells
