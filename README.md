@@ -16,30 +16,30 @@ The algorithms is based on pre-processing steps that provide the seeds for a reg
 # ✨ Subfunctions 
 
 ```
-regionGrowingCells ➜ bwmorph \
-                      | \
-                     ShadingCorrection ➜ simple_pad_2d \
-                      | \
-                     gaussF \
-                      | \
-                     expandu \
-                      | \ 
-                     imfilter \ 
-                      | \ 
-                     BackBlueBrown ➜ colourHist2 ➜ quanti_r \ 
-                      |                | \
-                      |               bwmorph_spur \ 
-                      |                | \ 
-                      |               bwmorph_majority \ 
-                      | \ 
+regionGrowingCells ➜ bwmorph 
+                      | 
+                     ShadingCorrection ➜ simple_pad_2d 
+                      | 
+                     gaussF 
+                      | 
+                     expandu 
+                      | 
+                     imfilter  
+                      | 
+                     BackBlueBrown ➜ colourHist2 ➜ quanti_r 
+                      |                |
+                      |               bwmorph_spur 
+                      |                | 
+                      |               bwmorph_majority 
+                      | 
                     JoinObjects ➜ BranchPoints ➜ padData 
-                      |                             | \
-                      |                            bwhitmiss \
-                      | CloseOpenObjects \
-                      | \
-                    bwlabel \
-                      | \
-                    SplitObjects ➜ regionGrowing \ 
+                      |                             |
+                      |                            bwhitmiss 
+                      | CloseOpenObjects 
+                      | 
+                    bwlabel 
+                      | 
+                    SplitObjects ➜ regionGrowing 
 ```
     
 # 🔰 Automatic segmentation 
