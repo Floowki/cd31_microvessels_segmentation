@@ -27,14 +27,14 @@ regionGrowingCells ➜ bwmorph
                      imfilter  
                       | 
                      BackBlueBrown ➜ colourHist2 ➜ quanti_r 
-                      |                |
-                      |               bwmorph_spur 
-                      |                | 
-                      |               bwmorph_majority 
+                      |                
+                      |            ➜ bwmorph_spur 
+                      |                 
+                      |            ➜ bwmorph_majority 
                       | 
                     JoinObjects ➜ BranchPoints ➜ padData 
-                      |                             |
-                      |                            bwhitmiss 
+                      |                             
+                      |                         ➜ bwhitmiss 
                       | CloseOpenObjects 
                       | 
                     bwlabel 
