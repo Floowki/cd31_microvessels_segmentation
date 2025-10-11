@@ -34,8 +34,7 @@ def regionGrowingCells(dataIn) :
     #|   # im2 : pre-processed input image with equalized channel levels : segmentation basis 
         
     
-    #### Intermediate functions 
-    #def imfilter(image, kernel):
+    # Intermediate functions #
     def imfilter(image, kernel, mode='same', boundary='fill', fillvalue=0):
         # Handle boundary conditions
         if boundary == 'fill':
@@ -53,10 +52,8 @@ def regionGrowingCells(dataIn) :
         else:
             raise ValueError(f"Unknown boundary condition: {boundary}")
         
-        # Apply convolution
         filtered = ndimage.convolve(image, kernel, mode=mode_scipy, cval=cval)
         
-        # Handle 'full' mode if needed
         if mode == 'full':
             pad_width = [(k//2, k//2) for k in kernel.shape]
             filtered = np.pad(filtered, pad_width, mode=mode_scipy, constant_values=cval)
@@ -64,12 +61,12 @@ def regionGrowingCells(dataIn) :
         return filtered
 
     def bwmorph(image, operation, iterations=1):
-        # Perform morphological operations on a binary image.
+        # Perform morphological operations on a binary image
         out = image.astype(bool).copy()
         if operation == 'clean':
             out = binary_opening(out, structure=np.ones((3,3)))
         elif operation == 'bridge':
-            # 'bridge' can be approximated with a dilation to connect close pixels.
+            # 'bridge' can be approximated with a dilation to connect close pixels
             out = binary_dilation(out, structure=np.ones((3,3)))
         elif operation == 'spur':
             for _ in range(iterations):
@@ -77,15 +74,12 @@ def regionGrowingCells(dataIn) :
         return out.astype(np.uint8)
 
     def bwlabel(binary):
-        # Label connected components.
         return measure.label(binary, connectivity=1)
     
-    # Main core of the function #  
+    # Function main core #  
     
-    # Check dimensions
     rows, cols, levs = dataIn.shape
 
-    # Remove Shading
     RCL = rows * cols * levs
     if RCL < 1e6:
         subSampL = 1
@@ -96,27 +90,23 @@ def regionGrowingCells(dataIn) :
     else:
         subSampL = 8
 
-    # Call shadingCorrection on a subsampled version of dataIn
+    # call shadingCorrection on a subsampled version of dataIn
     dataIn_sub = dataIn[0:rows:subSampL, 0:cols:subSampL, :]
     dataOutS, errSurfaceS, errSurfaceMin, errSurfaceMax = ShadingCorrection(dataIn_sub, numScales=None)
-    
     dataOutS = dataOutS.astype("uint8")
-    
     
     if subSampL == 1:
         errSurfaceS2 = errSurfaceS
     else:
-        # Create Gaussian filter (3x3 as in original MATLAB code)
+        # create a 3x3 Gaussian filter 
         filtG = gaussF(3, 3)
         
-        # Initialize output at full size
         errSurfaceS2 = np.zeros((rows, cols, levs))
         
         for counterL in range(levs):
-            # Get subsampled data for this channel
             subsampled = errSurfaceS[:,:,counterL]
             
-            # Calculate needed expansions to reach at least target size
+            # calculate needed expansions to reach at least target size
             current_rows, current_cols = subsampled.shape
             expansions_needed = 0
             while (current_rows * 2 <= rows) and (current_cols * 2 <= cols):
@@ -124,36 +114,33 @@ def regionGrowingCells(dataIn) :
                 current_cols *= 2
                 expansions_needed += 1
             
-            # Apply expansions
+            # apply expansions
             expanded = subsampled.copy()
             if expansions_needed > 0:
                 expanded = expandu(subsampled, expansions_needed)
             
             # Now handle residual scaling with interpolation
             if expanded.shape[0] < rows or expanded.shape[1] < cols:
-                # Use MATLAB-like imresize behavior
+
                 scale_factor = min(rows/expanded.shape[0], cols/expanded.shape[1])
                 expanded = zoom(expanded, (scale_factor, scale_factor), order=3)
                 
-                # Handle any rounding differences
                 if expanded.shape[0] > rows or expanded.shape[1] > cols:
                     expanded = expanded[:rows, :cols]
                 elif expanded.shape[0] < rows or expanded.shape[1] < cols:
-                    # Pad with edge values
+                    # pad with edge values
                     pad_rows = rows - expanded.shape[0]
                     pad_cols = cols - expanded.shape[1]
                     expanded = np.pad(expanded, ((0, pad_rows), (0, pad_cols)), mode='edge')
             
-            # Apply Gaussian smoothing (MATLAB-style convolution)
+            # apply Gaussian smoothing
             smoothed = imfilter(expanded, filtG, mode='replicate')
             
-            # Store result
             errSurfaceS2[:smoothed.shape[0], :smoothed.shape[1], counterL] = smoothed
     
-    # Ensure errSurfaceS2 matches dataIn size
     errSurfaceS2 = errSurfaceS2[:rows, :cols, :]
     
-    # Subtract shading correction error surface
+    # subtract shading correction error surface
     dataOut = dataIn.astype(float) - errSurfaceS2
     avChannels = np.mean(np.mean(dataOut, axis=0), axis=0)
     maxAvChannel = np.max(avChannels)
@@ -165,7 +152,7 @@ def regionGrowingCells(dataIn) :
     im1 = dataOut.copy()
     del dataOut
 
-    # Equalize channel levels for whitish background
+    # equalize channel levels for whitish background
     meanLevChannels = np.mean(np.mean(im1, axis=0), axis=0)
     maxMeanLev = np.max(meanLevChannels)
     if maxMeanLev < 140:
@@ -178,40 +165,37 @@ def regionGrowingCells(dataIn) :
     im2[:,:,2] = maxMeanLev * im1[:,:,2] / meanLevChannels[2]
     im2[im2 > 255] = 255
     
-    #im2 = im2.astype("uint8")
-
-    # Get seeds of background, blue cells and brown cells
+    # get seeds of background, blue cells and brown cells
     totMask, totMask0, totMask1, dataHue = BackBlueBrown(im2)
 
-    # Edge erosion
+    # edge erosion
     BW2 = bwmorph(bwmorph((totMask1==1).astype(np.uint8), 'bridge'), 'spur', 5)
     
-    # Join objects
+    # join objects
     BW3 = JoinObjects(BW2, (totMask1==2))
     
-    # Closing of objects
+    # closing of objects
     BW4 = CloseOpenObjects(BW3)
     
-    # Clean and label objects
+    # clean and label objects
     BW5 = bwlabel(BW4)
     statsObjects1 = regionprops(BW5)
     
-    # Filter objects by area  (tweak the min area here )
+    # filter objects by area  (to tweak)
     min_area = 30
     areas = np.array([prop.area for prop in statsObjects1]) if statsObjects1 else np.array([])
-    indices = np.where(areas > min_area)[0] + 1 if areas.size else np.array([]) ### 1000 arbitrary 
+    indices = np.where(areas > min_area)[0] + 1 if areas.size else np.array([]) 
     BW6 = bwlabel(np.isin(BW5, indices))
-    #
+    
+    # remove small holes 
     BW6 = BW6 > 0                                               
     BW6 = sk_morphology.remove_small_holes(BW6, area_threshold=150)           
     kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (40, 40))           
     BW6 = cv2.morphologyEx(BW6.astype(np.uint8), cv2.MORPH_CLOSE, kernel) 
-    #
     BW6 = bwlabel(BW6).astype(np.uint8)
     statsObjects2 = regionprops(BW6) 
 
-
-    # Splitting of objects
+    # splitting of objects
     if not statsObjects2:
         finalCells = np.zeros_like(BW6)
         statsObjects3 = []
@@ -222,7 +206,7 @@ def regionGrowingCells(dataIn) :
         statsObjects3 = regionprops(finalCells)
         
 
-    # Final cleaning - remove objects that are only partly brown
+    # final cleaning: remove objects that are only partly brown
     numBrownObjects = np.max(finalCells) if finalCells.size > 0 else 0
     dataHSV = color.rgb2hsv(im2.astype(np.float64)/255)
     dataSaturation = dataHSV[:,:,1]
@@ -243,12 +227,12 @@ def regionGrowingCells(dataIn) :
             if statsObjects3 and (counterBrObjs-1 < len(statsObjects3)):
                 relFactor[1, counterBrObjs-1] = statsObjects3[counterBrObjs-1].area
         
-        # Discard objects with relFactor < 0.25
+        # discard objects with relFactor < 0.25
         remove_indices = np.where(relFactor[0,:] < 0.25)[0] + 1
         if remove_indices.size > 0:
             finalCells[np.isin(finalCells, remove_indices)] = 0
         
-        # Discard objects with area < 30
+        # discard objects with area < 30
         remove_indices_area = [i+1 for i, prop in enumerate(statsObjects3) if prop.area < 30]
         if remove_indices_area:
             finalCells[np.isin(finalCells, remove_indices_area)] = 0
@@ -259,9 +243,9 @@ def regionGrowingCells(dataIn) :
     statsObjects3 = regionprops(finalCells)
 
     
-    BW2 = (finalCells > 0) & BW2                                              # added by me 
-    BW2 = sk_morphology.remove_small_holes(BW2.astype(bool), area_threshold=150)           # added by me 
-    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (40, 40))           # added by me 
-    BW2 = cv2.morphologyEx(BW2.astype(np.uint8), cv2.MORPH_CLOSE, kernel)     # added by me 
+    BW2 = (finalCells > 0) & BW2                                              
+    BW2 = sk_morphology.remove_small_holes(BW2.astype(bool), area_threshold=150)           
+    kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (40, 40))          
+    BW2 = cv2.morphologyEx(BW2.astype(np.uint8), cv2.MORPH_CLOSE, kernel)   
 
     return BW2, finalCells #, BW4 , finalCellsIm, statsObjects2, statsObjects3, BW3, BW6, im2
