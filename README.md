@@ -15,10 +15,10 @@ The algorithms is based on pre-processing steps that provide the seeds for a reg
 
 # ✨ Subfunctions 
 
-➜ 
-➜
-➜
-➜
+➜ \
+➜ \
+➜ \
+➜ \
 
 # 🔰 Automatic segmentation 
 
