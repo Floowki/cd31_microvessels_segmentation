@@ -64,7 +64,7 @@ img = cv2.imread(img_path)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 ```
 
-<img src='Images/Intro kidney.jpg' width='100%'> 
+<img src='Figures/Source image.jpg' width='100%'> 
 
 ## Successive steps 
 
