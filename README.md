@@ -73,7 +73,7 @@ im2, BW2, BW3, BW4, BW6, finalCells = regionGrowingCells(img)
 ```
 
 ```python
-plt.imshow(img)
+plt.imshow(im2)
 plt.title("Source image")
 plt.axis("off")
 plt.show()
