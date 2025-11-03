@@ -72,16 +72,7 @@ img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 im2, BW2, BW3, BW4, BW6, finalCells = regionGrowingCells(img)
 ```
 
-```python
-plt.imshow(im2)
-plt.title("Source image")
-plt.axis("off")
-plt.show()
-```
-
-<img src='Images/Intro kidney.jpg' width='100%'> 
-
-```
+``` python
 plt.imshow(im2)
 plt.title("Image corrected")
 plt.axis("off")
