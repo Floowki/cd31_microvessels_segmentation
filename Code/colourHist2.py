@@ -25,17 +25,17 @@ def colourHist2(dataHSV,sizeHue,sizeSaturation=None,sizeValue=None):
     dataValue_raw = dataHSV[:, :, 2].copy()
 
     # quantize each channel
-    dataHue, _ = quanti_r(dataHue_raw, bitsq=int(np.log2(sizeHue)))
+    dataHue, _ = quanti_r.quanti_r(dataHue_raw, bitsq=int(np.log2(sizeHue)))
     dataHue = 1 + (sizeHue - 1) * dataHue
     
-    dataSaturation, _ = quanti_r(dataSaturation_raw, bitsq=int(np.log2(sizeSaturation)))
+    dataSaturation, _ = quanti_r.quanti_r(dataSaturation_raw, bitsq=int(np.log2(sizeSaturation)))
     dataSaturation = 1 + (sizeSaturation - 1) * dataSaturation
     
     # if necessary, normalize 
     if np.max(dataValue_raw) > 1:
         dataValue_raw = dataValue_raw / 255
         
-    dataValue, _ = quanti_r(dataValue_raw, bitsq=int(np.log2(sizeValue)))
+    dataValue, _ = quanti_r.quanti_r(dataValue_raw, bitsq=int(np.log2(sizeValue)))
     dataValue = 1 + (sizeValue - 1) * dataValue
     
     # return copies 

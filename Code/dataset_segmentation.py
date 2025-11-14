@@ -3,7 +3,7 @@ import os
 from tqdm import tqdm
 import cv2
 import numpy as np
-from parallel_segmentation import parallel_vessels_segmentation
+import regionGrowingCells as RGC
 
 
 def MV_segment_dataset(dataset_path, dataset_segmentation_path) :
@@ -22,10 +22,9 @@ def MV_segment_dataset(dataset_path, dataset_segmentation_path) :
         path_direction = os.path.join(dataset_segmentation_path + "/finalCells", filename)
         
         if os.path.exists(path_direction):
-            #print("Already segmented")
-            continue  # Skip and continue 
+            
+            continue 
         
-        #print("Tile :", filename)
         img_path = os.path.join(dataset_path, filename)
         img = cv2.imread(img_path) 
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -33,8 +32,7 @@ def MV_segment_dataset(dataset_path, dataset_segmentation_path) :
 
         if img is not None :
             
-            
-            finalCells = parallel_vessels_segmentation(img)
+            _, _, _, _, _, _, finalCells = RGC.regionGrowinCells(img)
             finalCells = 255 * finalCells.astype(np.uint8)
             
             output_path_finalCells = os.path.join(dataset_segmentation_path, filename)

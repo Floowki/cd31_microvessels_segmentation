@@ -51,25 +51,36 @@ import numpy as np
 import cv2 
 import os 
 import matplotlib.pyplot as plt
-import regionGrowingCells
-from datset_segmentation import MV_segment_dataset
+import regionGrowingCells as RGC
+import dataset_segmentation as DS
 ```
 
-## Access data 
+## Access Image
 
 ```python
 img_path = ""
 
 img = cv2.imread(img_path) 
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+plt.imshow(img)
+plt.title("Image source")
+plt.axis("off")
+plt.show()
 ```
 
 <img src='Figures/Source image.jpg' width='100%'> 
 
+## Initial detection 
+
+After the shading correction and the equalization steps, the subfunction BackBlueBrown thresholds distinct hues in the HSV colour space, decomposing the image into 3 channels. This decomposition separates the blood vessels (in brown) from the background and the cell nuclei (in blue). 
+
+<img src='Figures/Init space.jpg' width='100%'> 
+
 ## Successive steps 
 
 ```python
-im2, BW2, BW3, BW4, BW6, finalCells = regionGrowingCells(img)
+im1, im2, BW2, BW3, BW4, BW6, finalCells = RGC.regionGrowingCells(img)
 ```
 
 ``` python
@@ -77,54 +88,35 @@ plt.imshow(im2)
 plt.title("Image corrected")
 plt.axis("off")
 plt.show()
-```
 
-<img src='Images/Intro kidney.jpg' width='100%'> 
-
-```python
-plt.imshow(BW2)
+plt.imshow(BW2, cmap="gray")
 plt.title("Mask with edge erosion")
 plt.axis("off")
 plt.show()
-```
 
-<img src='Images/Intro kidney.jpg' width='100%'> 
-
-```python
-plt.imshow(BW3)
+plt.imshow(BW3, cmap="gray")
 plt.title("Mask with joined objects")
 plt.axis("off")
 plt.show()
-```
 
-<img src='Images/Intro kidney.jpg' width='100%'> 
-
-```python
-plt.imshow(BW4)
+plt.imshow(BW4, cmap="gray")
 plt.title("Mask with closed objects")
 plt.axis("off")
 plt.show()
-```
 
-<img src='Images/Intro kidney.jpg' width='100%'> 
-
-```python
-plt.imshow(BW6)
+plt.imshow(BW6, cmap="gray")
 plt.title("Mask small objects filtered")
 plt.axis("off")
 plt.show()
-```
 
-<img src='Images/Intro kidney.jpg' width='100%'> 
-
-```python
-plt.imshow(finalCells)
+plt.imshow(finalCells, cmap="gray")
 plt.title("Final mask cleaned objects")
 plt.axis("off")
 plt.show()
 ```
 
-<img src='Images/Intro kidney.jpg' width='100%'> 
+<img src='Figures/Pipeline.jpg' width='100%'> 
+
 
 # 🚩 Dataset segmentation 
 
@@ -132,7 +124,7 @@ plt.show()
 dataset_path = ""
 dataset_segmentation_path = ""
 
-MV_segment_dataset(dataset_path, dataset_segmentation_path)
+DS.dataset_segmentation(dataset_path, dataset_segmentation_path)
 ```
 
 

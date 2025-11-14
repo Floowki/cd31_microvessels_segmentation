@@ -87,7 +87,7 @@ def ShadingCorrection(dataIn, numScales = None):
         # create Gaussian filter
         sizeFR_S = 3
         sizeFC_S = sizeFR_S
-        filtG_small = gaussF(sizeFR_S, sizeFC_S)
+        filtG_small = gaussF.gaussF(sizeFR_S, sizeFC_S)
         
         # ensure filter is 2D for convolve2d
         if filtG_small.ndim > 2:
@@ -157,7 +157,7 @@ def ShadingCorrection(dataIn, numScales = None):
                 sizeFC_S = sizeFR_S
                 
                 # generate filter with correct parameters
-                filtG_small = gaussF(sizeFR_S, sizeFC_S)
+                filtG_small = gaussF.gaussF(sizeFR_S, sizeFC_S)
                 
                 # ensure filter is 2D
                 if filtG_small.ndim > 2:
@@ -239,7 +239,7 @@ def ShadingCorrection(dataIn, numScales = None):
             sizeFC_S = sizeFR_S
             
             # generate filter with correct parameters
-            filtG_small = gaussF(sizeFR_S, sizeFC_S)
+            filtG_small = gaussF.gaussF(sizeFR_S, sizeFC_S)
             
             # ensure filter is 2D
             if filtG_small.ndim > 2:

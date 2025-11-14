@@ -3,9 +3,12 @@ import numpy as np
 from scipy.signal import convolve2d
 from scipy.ndimage import label
 from skimage.measure import regionprops
-import skimage
+from scipy import ndimage
 from scipy.ndimage import binary_fill_holes
 import colourHist2
+import skimage
+from skimage import color
+from skimage.measure import label
 
 
 def bwmorph_spur(binary_img, iterations):
@@ -51,7 +54,7 @@ def BackBlueBrown(dataRGB):
     rows, cols, levs = dataRGB.shape  
     dataHSV = skimage.color.rgb2hsv(dataRGB)
     # colourHist2 returns the chromaticity histogram, H,S,V in different matrices
-    hs_im1, chrom3D, dataHue, dataSaturation, dataValue = colourHist2(dataHSV, 32, 32, 32)
+    hs_im1, chrom3D, dataHue, dataSaturation, dataValue = colourHist2.colourHist2(dataHSV, 32, 32, 32)
     sizeSaturation, sizeHue, sizeValue = chrom3D.shape  
     
     #  Maximum Saturation Profile P_max_S, 99% Profile P_99_S and hue histogram
@@ -216,7 +219,7 @@ def BackBlueBrown(dataRGB):
     #  dilate only the brown area, only restriction is the hue
     counterGrow = 1
     changeFromPrevious = 11
-    numGrowthCycles = 2
+    numGrowthCycles = 10
     while (counterGrow < numGrowthCycles) and (changeFromPrevious > 10):
         boundaryRegionBrown = skimage.morphology.dilation(initBrown, footprint=kernelDil1)
         brightBrown = np.isin(dataHue, np.unique(np.concatenate((brownRange - 1, brownRange + 1))))
@@ -273,7 +276,7 @@ def BackBlueBrown(dataRGB):
     HolesBrown = binary_fill_holes(initBrown)
     HolesBrownL = label(HolesBrown.astype(np.int32) - initBrown.astype(np.int32), connectivity=1)
     HolesBrownR = regionprops(HolesBrownL)
-    HolesBrownK = np.isin(HolesBrownL, [prop.area for prop in HolesBrownR if prop.area > 10])
+    HolesBrownK = np.isin(HolesBrownL, [prop.area for prop in HolesBrownR if prop.area > 15])
                              
     # smooth with an imclose, majority and removal of small objects
     initBrown = skimage.morphology.closing(bwmorph_spur(initBrown, 2), footprint=np.array([[0, 1, 1, 0],
@@ -282,7 +285,6 @@ def BackBlueBrown(dataRGB):
     initBrown[HolesBrownK] = 0
     initBrown[initBack0] = 0
 
-    
     initBrownL = label(initBrown, connectivity=2)
     smallBrown = regionprops(initBrownL)
     initBrown = np.isin(initBrownL, [prop.label for prop in smallBrown if prop.area >= 25])

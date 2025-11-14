@@ -1,6 +1,6 @@
 
 import numpy as np 
-import ndimage
+from scipy import ndimage
 from scipy.ndimage import label
 from skimage import measure, morphology
 from scipy.ndimage import distance_transform_edt

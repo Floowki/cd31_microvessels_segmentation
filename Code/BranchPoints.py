@@ -16,7 +16,7 @@ def bwhitmiss(image, kernel):
     #|          # = foreground_erosion & background_dilation (intersection)
     
     # Erosion of the foreground (white areas in the image)
-    foreground_erosion = binary_erosion(image, structure=kernel)
+    foreground_erosion = binary_erosion(image, footprint=kernel)
     
     # Dilation of the background (black areas in the image)
     background_dilation = binary_dilation(~image, structure=kernel)
@@ -41,7 +41,7 @@ def BranchPoints(dataIn):
     branch_kernel3 = np.array([[1, 0, 0], [0, 1, 0], [1, 0, 1]])  # diagonal
     
     # Pad input data
-    dataIn = padData(dataIn, 1, [], 0)
+    dataIn = padData.padData(dataIn, 1, [], 0)
     
     # Initialize output array
     branch_points1 = np.zeros_like(dataIn, dtype=bool)

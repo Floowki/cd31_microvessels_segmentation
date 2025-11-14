@@ -2,7 +2,7 @@
 
 import numpy as np
 from skimage.measure import regionprops
-from scipy.ndimage import label
+from skimage.measure import label
 from scipy.ndimage import distance_transform_edt
 import math
 from scipy.ndimage import binary_fill_holes
@@ -101,13 +101,13 @@ def JoinObjects(BW1,backgroundMask = None):
                                     
                                     # calculate skeletons and branch points
                                     skelCurrent = skeletonize(currentObject[minRow:maxRow, minCol:maxCol])
-                                    BPoints1, BPoints12, numPoints1 = BranchPoints(skelCurrent)
+                                    BPoints1, BPoints12, numPoints1 = BranchPoints.BranchPoints(skelCurrent)
                                     
                                     skelJoint = skeletonize(commonRegionRed)
-                                    BPoints3, BPoints32, numPoints3 = BranchPoints(skelJoint)
+                                    BPoints3, BPoints32, numPoints3 = BranchPoints.BranchPoints(skelJoint)
                                     
                                     skelClosest = skeletonize(closestObject[minRowClose:maxRowClose, minColClose:maxColClose])
-                                    BPoints2, BPoints22, numPoints2 = BranchPoints(skelClosest)
+                                    BPoints2, BPoints22, numPoints2 = BranchPoints.BranchPoints(skelClosest)
                                     
                                     if (numPoints1 + numPoints2) >= (numPoints3):
                                         # if there are less branching points in the joined region, then join
